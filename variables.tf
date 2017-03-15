@@ -39,15 +39,15 @@ variable "ami" {
   }
 }
 
-variable "aws_region" {
-  default     = "us-east-1"
-  description = "South America Zone"
-}
-
 variable "username" {
   description = "Amazon AWS access key"
 }
 
+variable "aws_region" {
+  default     = "us-east-1"
+  description = "AZ ZONE"
+}
+
 variable "password" {
-  description = "password, provide through your ENV variables"
+  description = "PROVIDED BY ENV"
 }
