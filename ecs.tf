@@ -45,7 +45,7 @@ resource "aws_launch_configuration" "app" {
     "${aws_security_group.instance_sg.id}",
   ]
 
-  key_name                    = "${aws_key_pair.tiago.id}"
+  key_name                    = "${aws_key_pair.admin.id}"
   image_id                    = "${data.aws_ami.stable_coreos.id}"
   instance_type               = "t2.small"
   iam_instance_profile        = "${aws_iam_instance_profile.app.name}"
@@ -122,21 +122,6 @@ resource "aws_ecs_cluster" "main" {
   name = "Main-service-cluster"
 }
 
-data "template_file" "task_definition" {
-  template = "${file("${path.module}/task-definition.json")}"
-
-  vars {
-    image_url        = "redmine:latest"
-    container_name   = "redmine"
-    log_group_region = "${var.aws_region}"
-    log_group_name   = "${aws_cloudwatch_log_group.app.name}"
-    name             = "${aws_db_instance.redminedb.name}"
-    username         = "${aws_db_instance.redminedb.username}"
-    password         = "${aws_db_instance.redminedb.password}"
-    address          = "${aws_db_instance.redminedb.address}"
-  }
-}
-
 resource "aws_ecs_task_definition" "redmine" {
   family                = "redmine"
   container_definitions = "${data.template_file.task_definition.rendered}"
@@ -204,4 +189,64 @@ resource "aws_cloudwatch_log_group" "ecs" {
 
 resource "aws_cloudwatch_log_group" "app" {
   name = "tf-ecs-group/redmine"
+}
+
+resource "aws_ecr_repository" "redmine" {
+  name = "redmine"
+
+  provisioner "local-exec" {
+    command = "./build-upload-redmine.sh ${var.aws_region}"
+  }
+}
+
+resource "aws_ecr_repository_policy" "FullAcess" {
+  repository = "${aws_ecr_repository.redmine.id}"
+
+  policy = <<EOF
+{
+    "Version": "2008-10-17",
+    "Statement": [
+        {
+            "Sid": "new policy",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchGetImage",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:PutImage",
+                "ecr:InitiateLayerUpload",
+                "ecr:UploadLayerPart",
+                "ecr:CompleteLayerUpload",
+                "ecr:DescribeRepositories",
+                "ecr:GetRepositoryPolicy",
+                "ecr:ListImages",
+                "ecr:DeleteRepository",
+                "ecr:BatchDeleteImage",
+                "ecr:SetRepositoryPolicy",
+                "ecr:DeleteRepositoryPolicy"
+            ]
+        }
+    ]
+}
+EOF
+}
+
+data "template_file" "task_definition" {
+  template = "${file("${path.module}/task-definition.json")}"
+
+  vars {
+    image_url        = "${aws_ecr_repository.redmine.repository_url}"
+    container_name   = "redmine"
+    log_group_region = "${var.aws_region}"
+    log_group_name   = "${aws_cloudwatch_log_group.app.name}"
+    db_name          = "${aws_db_instance.redminedb.name}"
+    username         = "${aws_db_instance.redminedb.username}"
+    password         = "${var.default_password}"
+    db_host          = "${aws_db_instance.redminedb.address}"
+  }
+
+  depends_on = [
+    "aws_ecr_repository_policy.FullAcess",
+  ]
 }

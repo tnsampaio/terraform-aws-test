@@ -17,6 +17,23 @@
             "awslogs-group": "${log_group_name}",
             "awslogs-region": "${log_group_region}"
         }
-    }
+    },
+    "environment":[
+      {
+        "name": "REDMINE_DB_MYSQL",
+        "value": "${db_host}"
+      },
+      {
+        "name": "REDMINE_DB_USERNAME",
+        "value": "${username}"
+      },
+      {
+        "name": "REDMINE_DB_PASSWORD",
+        "value": "${password}"
+      },
+      {
+        "name": "REDMINE_DB_DATABASE",
+        "value": "${db_name}"
+      }]
   }
 ]

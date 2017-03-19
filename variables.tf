@@ -21,14 +21,14 @@ variable "engine_version" {
   }
 }
 
+variable "default_password" {
+  description = "Default password for systems"
+  default     = "1234aaaAAAsssDDDred"
+}
+
 variable "instance_class" {
   default     = "db.t2.micro"
   description = "Free tier Instance class"
-}
-
-variable "db_name" {
-  default     = "redmine"
-  description = "db name"
 }
 
 variable "ami" {
@@ -45,9 +45,9 @@ variable "username" {
 
 variable "aws_region" {
   default     = "us-east-1"
-  description = "AZ ZONE"
+  description = "Default AZ Zone"
 }
 
 variable "password" {
-  description = "PROVIDED BY ENV"
+  description = "password, provide through your ENV variables"
 }
