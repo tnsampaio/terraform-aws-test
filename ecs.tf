@@ -143,6 +143,8 @@ resource "aws_ecs_service" "redmine" {
   depends_on = [
     "aws_iam_role_policy.ecs_service",
     "aws_alb_listener.front_end",
+    "aws_db_instance.redminedb",
+    "aws_ecr_repository_policy.redmine_access",
   ]
 }
 
@@ -199,32 +201,23 @@ resource "aws_ecr_repository" "redmine" {
   }
 }
 
-resource "aws_ecr_repository_policy" "FullAcess" {
+resource "aws_ecr_repository_policy" "redmine_access" {
   repository = "${aws_ecr_repository.redmine.id}"
+
+  depends_on = [
+    "aws_ecr_repository.redmine",
+  ]
 
   policy = <<EOF
 {
     "Version": "2008-10-17",
     "Statement": [
         {
-            "Sid": "new policy",
+            "Sid": "Redmine_access_policy_ALLOW",
             "Effect": "Allow",
             "Principal": "*",
             "Action": [
-                "ecr:GetDownloadUrlForLayer",
-                "ecr:BatchGetImage",
-                "ecr:BatchCheckLayerAvailability",
-                "ecr:PutImage",
-                "ecr:InitiateLayerUpload",
-                "ecr:UploadLayerPart",
-                "ecr:CompleteLayerUpload",
-                "ecr:DescribeRepositories",
-                "ecr:GetRepositoryPolicy",
-                "ecr:ListImages",
-                "ecr:DeleteRepository",
-                "ecr:BatchDeleteImage",
-                "ecr:SetRepositoryPolicy",
-                "ecr:DeleteRepositoryPolicy"
+                "ecr:*"
             ]
         }
     ]
@@ -247,6 +240,6 @@ data "template_file" "task_definition" {
   }
 
   depends_on = [
-    "aws_ecr_repository_policy.FullAcess",
+    "aws_ecr_repository_policy.redmine_access",
   ]
 }

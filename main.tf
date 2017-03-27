@@ -46,7 +46,8 @@ resource "aws_db_subnet_group" "default" {
 }
 
 resource "aws_vpc" "main" {
-  cidr_block = "172.20.0.0/16"
+  cidr_block           = "172.20.0.0/16"
+  enable_dns_hostnames = 1
 
   tags {
     Name = "main"
@@ -56,4 +57,8 @@ resource "aws_vpc" "main" {
 resource "aws_key_pair" "admin" {
   key_name   = "Admin's ssh key"
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDAomgAhg2r3ZXXeh8trnTjAnR7F53VcMA1eHkBRgSKW2n+i0sEXXKIt9bGs4JXaqdYFPnpIfx1gGSayUBpZtGZue+d1yy3CC/V9/7rG7wwJGTjTXb843PQcQqFUFVx2TN6iEDz8YlYgFF42vR25k75W3DbnLSNolHYPE5H/gT0T18iBwcK70BH6cz2lILCOYTDQsozEt8m3ZbOi6HK9B8Lev9Gymh/RPISiigH6JfnsbTLBUMd2EiuSUBXiQPIGJ7Y2tCGyXcpmF41ax3cp56V6ByoddjmnpjvDSB+0Qjb9SBXlOIONR93ay3/hI+YwZz7K7cVXYBpBwA3fY+qTIIf Tiago N Sampaio"
+}
+
+output "redmine" {
+  value = "${aws_instance.front.address}"
 }
