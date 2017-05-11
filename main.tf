@@ -16,6 +16,8 @@ resource "aws_db_instance" "redminedb" {
   password               = "${var.default_password}"
   vpc_security_group_ids = ["${aws_security_group.internal_access.id}"]
   db_subnet_group_name   = "${aws_db_subnet_group.default.id}"
+  skip_final_snapshot    = true
+
 }
 
 resource "aws_instance" "front" {
